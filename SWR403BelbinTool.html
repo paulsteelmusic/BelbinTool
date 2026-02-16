@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Belbin Team Roles – Musical Collaboration</title>
+
+<style>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f4f6f8;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+}
+
+.container {
+    max-width: 750px;
+    margin: auto;
+}
+
+.card {
+    background: white;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.remaining {
+    font-weight: bold;
+}
+
+.statement {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 12px 0;
+    gap: 12px;
+}
+
+.statement span {
+    flex: 1;
+    font-size: 14px;
+}
+
+input[type="number"] {
+    width: 75px;
+    padding: 8px;
+    font-size: 16px;
+    text-align: center;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    border-radius: 12px;
+    border: none;
+    background: #1f6feb;
+    color: white;
+    margin-top: 10px;
+}
+
+button:disabled {
+    background: grey;
+}
+
+.result-card {
+    display: none;
+    margin-top: 20px;
+}
+
+/* Primary + Secondary Styling */
+
+.primary-role {
+    background: #e8f1ff;
+    border-left: 6px solid #1f6feb;
+    padding: 16px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.primary-role strong {
+    font-size: 18px;
+}
+
+.secondary-role {
+    background: #f7f7f7;
+    padding: 14px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+}
+
+.secondary-role strong {
+    font-size: 16px;
+}
+
+.role-description {
+    margin-top: 6px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>Belbin Team Roles</h1>
+<p>Allocate exactly <strong>10 points per section</strong>.</p>
+
+<div id="sections"></div>
+
+<button id="calculateBtn" onclick="calculateResults()" disabled>
+Discover My Team Role
+</button>
+
+<div class="card result-card" id="results"></div>
+
+</div>
+
+<script>
+
+const roleMap = {
+    PL: "Plant",
+    RI: "Resource Investigator",
+    CO: "Co-ordinator",
+    SH: "Shaper",
+    ME: "Monitor Evaluator",
+    TW: "Teamworker",
+    IMP: "Implementer",
+    CF: "Completer Finisher"
+};
+
+const roleDescriptions = {
+    PL: "You are likely to generate original ideas that shift the creative direction of a piece. You may introduce unexpected harmonic, structural or conceptual suggestions that spark momentum. Your strength lies in imagination and lateral thinking. Be mindful of staying connected to the group process so ideas move into completion.",
+    RI: "You bring energy and fresh perspective into collaborative sessions. You often open new directions or reframe creative blocks. Your curiosity prevents stagnation. Be aware that sustained focus is sometimes needed to carry ideas through once initial excitement fades.",
+    CO: "You help the group stay aligned and purposeful. You may clarify direction, summarise decisions and ensure everyone understands the goal. Your strength lies in oversight and balance. Try to ensure you also contribute creatively, not just organisationally.",
+    SH: "You bring drive and urgency to the creative process. When momentum drops, you push things forward and challenge the group to raise its standard. This energises collaboration. Balancing directness with sensitivity will strengthen your impact.",
+    ME: "You provide thoughtful analysis and objective judgement. You step back to assess whether ideas truly serve the whole piece. Your strength lies in critical listening and decision-making. Be mindful that excessive caution can slow experimentation.",
+    TW: "You support the collaborative atmosphere and maintain psychological safety. You notice when others disengage and help bring them back in. Your strength lies in relational awareness. Ensure your own creative voice remains present.",
+    IMP: "You translate ideas into structured musical reality. You help move work from concept to form and create dependable frameworks. Your reliability strengthens collaboration. Stay open to flexibility when experimentation is needed.",
+    CF: "You refine and polish. You are attentive to detail and committed to high standards before something is declared finished. This protects quality. Be mindful of perfectionism slowing the creative flow."
+};
+
+const sectionsData = [
+{
+letter:"A",
+statements:[
+["I often suggest unusual musical ideas that others haven’t considered","PL"],
+["I bring in references or inspirations that spark new directions","RI"],
+["I help clarify the overall direction when ideas feel scattered","CO"],
+["I push the group to make decisions rather than linger too long","SH"],
+["I step back and question whether an idea truly works","ME"],
+["I make sure everyone has space to contribute","TW"],
+["I quickly turn rough ideas into something workable","IMP"],
+["I focus on refining sections once the main idea is there","CF"]
+]},
+{
+letter:"B",
+statements:[
+["I enjoy experimenting with melody, harmony or structure","PL"],
+["I introduce fresh perspectives that shift the mood of the session","RI"],
+["I help organise who is doing what during the writing process","CO"],
+["I challenge ideas directly if I think they could be stronger","SH"],
+["I assess whether the arrangement feels balanced","ME"],
+["I notice when collaboration feels tense and try to ease it","TW"],
+["I build solid foundations others can develop further","IMP"],
+["I pay attention to details others might overlook","CF"]
+]},
+{
+letter:"C",
+statements:[
+["I like exploring new sounds or textures","PL"],
+["I suggest alternative approaches when we feel stuck","RI"],
+["I keep the group aligned with the original intention","CO"],
+["I create momentum when energy drops","SH"],
+["I compare options carefully before choosing one","ME"],
+["I adapt my ideas to support the group dynamic","TW"],
+["I help shape ideas into clear sections","IMP"],
+["I refine transitions and small musical details","CF"]
+]},
+{
+letter:"D",
+statements:[
+["I often introduce bold or unexpected creative choices","PL"],
+["I draw connections between different ideas in the room","RI"],
+["I summarise decisions so everyone knows where we stand","CO"],
+["I push for higher standards when something feels average","SH"],
+["I analyse what might weaken a section","ME"],
+["I encourage others when confidence dips","TW"],
+["I help structure ideas into a coherent form","IMP"],
+["I carefully check the final version before moving on","CF"]
+]},
+{
+letter:"E",
+statements:[
+["I enjoy rethinking how a section could work differently","PL"],
+["I bring energy that opens up new creative directions","RI"],
+["I help balance input so no one voice dominates","CO"],
+["I keep things moving when progress slows","SH"],
+["I weigh up strengths and weaknesses of each idea","ME"],
+["I prioritise maintaining a positive working atmosphere","TW"],
+["I translate discussion into practical musical steps","IMP"],
+["I polish ideas once the structure is set","CF"]
+]},
+{
+letter:"F",
+statements:[
+["I like proposing creative twists to develop the piece","PL"],
+["I explore possibilities that others might not immediately see","RI"],
+["I help manage time within the session","CO"],
+["I challenge complacency when ideas feel safe","SH"],
+["I judge whether something feels finished or not","ME"],
+["I help resolve disagreements calmly","TW"],
+["I build dependable musical frameworks","IMP"],
+["I fine-tune arrangement details carefully","CF"]
+]},
+{
+letter:"G",
+statements:[
+["I contribute original ideas that shift the direction of the piece","PL"],
+["I connect separate ideas into something cohesive","RI"],
+["I help the group stay focused on its goal","CO"],
+["I encourage the group to push beyond its comfort zone","SH"],
+["I reflect on whether ideas serve the whole piece","ME"],
+["I actively support quieter collaborators","TW"],
+["I help transform sketches into structured material","IMP"],
+["I refine and tidy elements before completion","CF"]
+]}
+];
+
+function createSections() {
+    const container = document.getElementById("sections");
+
+    sectionsData.forEach(section => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const header = document.createElement("div");
+        header.className = "card-header";
+        header.innerHTML = `<strong>Section ${section.letter}</strong>
+        <span class="remaining" id="remain${section.letter}">Remaining: 10</span>`;
+        header.onclick = () => toggleSection(card);
+
+        card.appendChild(header);
+
+        const body = document.createElement("div");
+        body.style.display = "none";
+
+        section.statements.forEach((item) => {
+            const row = document.createElement("div");
+            row.className = "statement";
+
+            row.innerHTML = `
+            <span>${item[0]}</span>
+            <input type="number" min="0" max="10" value="0"
+            data-section="${section.letter}"
+            data-role="${item[1]}"
+            oninput="handleInput(this)">
+            `;
+
+            body.appendChild(row);
+        });
+
+        card.appendChild(body);
+        container.appendChild(card);
+    });
+}
+
+function toggleSection(card) {
+    document.querySelectorAll(".card div:nth-child(2)").forEach(body => {
+        body.style.display = "none";
+    });
+    card.querySelector("div:nth-child(2)").style.display = "block";
+}
+
+function handleInput(input) {
+    const section = input.dataset.section;
+    const inputs = document.querySelectorAll(`input[data-section="${section}"]`);
+
+    let total = 0;
+    inputs.forEach(i => total += parseInt(i.value) || 0);
+
+    if (total > 10) {
+        input.value = 0;
+        total = 0;
+        inputs.forEach(i => total += parseInt(i.value) || 0);
+    }
+
+    const remaining = 10 - total;
+    const remainDisplay = document.getElementById("remain"+section);
+
+    remainDisplay.textContent = remaining === 0 ? "Complete ✓" : "Remaining: " + remaining;
+    remainDisplay.style.color = remaining === 0 ? "green" : "orange";
+
+    checkAllSections();
+}
+
+function checkAllSections() {
+    let complete = true;
+
+    sectionsData.forEach(section => {
+        const inputs = document.querySelectorAll(`input[data-section="${section.letter}"]`);
+        let total = 0;
+        inputs.forEach(i => total += parseInt(i.value) || 0);
+        if (total !== 10) complete = false;
+    });
+
+    document.getElementById("calculateBtn").disabled = !complete;
+}
+
+function calculateResults() {
+    let scores = {};
+
+    document.querySelectorAll("input").forEach(input => {
+        const role = input.dataset.role;
+        scores[role] = (scores[role] || 0) + (parseInt(input.value) || 0);
+    });
+
+    let sorted = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+
+    let resultsDiv = document.getElementById("results");
+    resultsDiv.style.display = "block";
+    resultsDiv.innerHTML = "<h2>Your Team Roles</h2>";
+
+    const primary = sorted[0];
+
+    resultsDiv.innerHTML += `
+        <div class="primary-role">
+            <div><strong>Primary Role: ${roleMap[primary[0]]}</strong> — ${primary[1]} points</div>
+            <div class="role-description">${roleDescriptions[primary[0]]}</div>
+        </div>
+    `;
+
+    sorted.slice(1,3).forEach(role => {
+        resultsDiv.innerHTML += `
+            <div class="secondary-role">
+                <div><strong>Secondary Strength: ${roleMap[role[0]]}</strong> — ${role[1]} points</div>
+                <div class="role-description">${roleDescriptions[role[0]]}</div>
+            </div>
+        `;
+    });
+
+    resultsDiv.scrollIntoView({behavior:"smooth"});
+}
+
+createSections();
+
+</script>
+
+</body>
+</html>
