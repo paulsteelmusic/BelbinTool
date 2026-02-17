@@ -12,15 +12,8 @@ body {
     margin: 0;
     padding: 20px;
 }
-
-h1 {
-    text-align: center;
-}
-
-.container {
-    max-width: 750px;
-    margin: auto;
-}
+h1 { text-align: center; }
+.container { max-width: 750px; margin: auto; }
 
 .card {
     background: white;
@@ -37,9 +30,8 @@ h1 {
     cursor: pointer;
 }
 
-.remaining {
-    font-weight: bold;
-}
+.remaining { font-weight: bold; }
+.card-body { display: none; }
 
 .statement {
     display: flex;
@@ -49,10 +41,7 @@ h1 {
     gap: 12px;
 }
 
-.statement span {
-    flex: 1;
-    font-size: 14px;
-}
+.statement span { flex: 1; font-size: 14px; }
 
 input[type="number"] {
     width: 75px;
@@ -72,14 +61,9 @@ button {
     margin-top: 10px;
 }
 
-button:disabled {
-    background: grey;
-}
+button:disabled { background: grey; }
 
-.result-card {
-    display: none;
-    margin-top: 20px;
-}
+.result-card { display: none; margin-top: 20px; }
 
 .primary-role {
     background: #e8f1ff;
@@ -111,17 +95,24 @@ button:disabled {
 <p>Allocate exactly <strong>10 points per section</strong>.</p>
 
 <div id="sections"></div>
-
-<button id="calculateBtn" disabled>
-Discover My Team Role
-</button>
-
+<button id="calculateBtn" disabled>Discover My Team Role</button>
 <div class="card result-card" id="results"></div>
 
 </div>
 
 <script>
 
+// ---------- Shuffle Utility ----------
+function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+// ---------- Role Data ----------
 const roleMap = {
     PL: "Plant",
     RI: "Resource Investigator",
@@ -144,6 +135,7 @@ const roleDescriptions = {
     CF: "You refine and polish details. Avoid letting perfectionism slow creative flow."
 };
 
+// ---------- Sections A–G ----------
 const sectionsData = [
 {
 letter:"A",
@@ -231,6 +223,7 @@ statements:[
 ]}
 ];
 
+// ---------- Build Interface ----------
 function createSections() {
     const container = document.getElementById("sections");
 
@@ -252,14 +245,18 @@ function createSections() {
 
         header.appendChild(title);
         header.appendChild(remain);
-        header.onclick = function() { toggleSection(card); };
+        header.addEventListener("click", function() {
+            toggleSection(card);
+        });
 
         card.appendChild(header);
 
         const body = document.createElement("div");
-        body.style.display = "none";
+        body.className = "card-body";
 
-        section.statements.forEach((item, index) => {
+        const shuffled = shuffleArray(section.statements);
+
+        shuffled.forEach((item, index) => {
 
             const row = document.createElement("div");
             row.className = "statement";
@@ -272,9 +269,6 @@ function createSections() {
             input.min = "0";
             input.max = "10";
             input.value = "0";
-            input.id = section.letter + "_" + index;
-            input.name = section.letter + "_" + index;
-            input.autocomplete = "off";
             input.dataset.section = section.letter;
             input.dataset.role = item[1];
 
@@ -295,51 +289,44 @@ function createSections() {
         .addEventListener("click", calculateResults);
 }
 
+// ---------- Logic ----------
 function toggleSection(card) {
-    document.querySelectorAll(".card div:nth-child(2)").forEach(body => {
+    document.querySelectorAll(".card-body").forEach(body => {
         body.style.display = "none";
     });
-    card.querySelector("div:nth-child(2)").style.display = "block";
+    card.querySelector(".card-body").style.display = "block";
 }
 
 function handleInput(input) {
     const section = input.dataset.section;
     const inputs = document.querySelectorAll("input[data-section='" + section + "']");
-
     let total = 0;
     inputs.forEach(i => total += parseInt(i.value) || 0);
-
     if (total > 10) {
         input.value = 0;
         total = 0;
         inputs.forEach(i => total += parseInt(i.value) || 0);
     }
-
     const remaining = 10 - total;
     const remainDisplay = document.getElementById("remain" + section);
-
     remainDisplay.textContent = remaining === 0 ? "Complete" : "Remaining: " + remaining;
     remainDisplay.style.color = remaining === 0 ? "green" : "orange";
-
     checkAllSections();
 }
 
 function checkAllSections() {
     let complete = true;
-
     sectionsData.forEach(section => {
         const inputs = document.querySelectorAll("input[data-section='" + section.letter + "']");
         let total = 0;
         inputs.forEach(i => total += parseInt(i.value) || 0);
         if (total !== 10) complete = false;
     });
-
     document.getElementById("calculateBtn").disabled = !complete;
 }
 
 function calculateResults() {
     let scores = {};
-
     document.querySelectorAll("input[type='number']").forEach(input => {
         const role = input.dataset.role;
         scores[role] = (scores[role] || 0) + (parseInt(input.value) || 0);
