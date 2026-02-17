@@ -112,7 +112,7 @@ button:disabled {
 
 <div id="sections"></div>
 
-<button id="calculateBtn" onclick="calculateResults()" disabled>
+<button id="calculateBtn" disabled>
 Discover My Team Role
 </button>
 
@@ -235,12 +235,23 @@ function createSections() {
     const container = document.getElementById("sections");
 
     sectionsData.forEach(section => {
+
         const card = document.createElement("div");
         card.className = "card";
 
         const header = document.createElement("div");
         header.className = "card-header";
-        header.innerHTML = "<strong>Section " + section.letter + "</strong><span class='remaining' id='remain" + section.letter + "'>Remaining: 10</span>";
+
+        const title = document.createElement("strong");
+        title.textContent = "Section " + section.letter;
+
+        const remain = document.createElement("span");
+        remain.className = "remaining";
+        remain.id = "remain" + section.letter;
+        remain.textContent = "Remaining: 10";
+
+        header.appendChild(title);
+        header.appendChild(remain);
         header.onclick = function() { toggleSection(card); };
 
         card.appendChild(header);
@@ -249,20 +260,30 @@ function createSections() {
         body.style.display = "none";
 
         section.statements.forEach((item, index) => {
+
             const row = document.createElement("div");
             row.className = "statement";
 
-            const inputId = section.letter + "_" + index;
+            const label = document.createElement("span");
+            label.textContent = item[0];
 
-            row.innerHTML =
-                "<span>" + item[0] + "</span>" +
-                "<input type='number' min='0' max='10' value='0' " +
-                "id='" + inputId + "' " +
-                "name='" + inputId + "' " +
-                "autocomplete='off' " +
-                "data-section='" + section.letter + "' " +
-                "data-role='" + item[1] + "'>";
+            const input = document.createElement("input");
+            input.type = "number";
+            input.min = "0";
+            input.max = "10";
+            input.value = "0";
+            input.id = section.letter + "_" + index;
+            input.name = section.letter + "_" + index;
+            input.autocomplete = "off";
+            input.dataset.section = section.letter;
+            input.dataset.role = item[1];
 
+            input.addEventListener("input", function() {
+                handleInput(this);
+            });
+
+            row.appendChild(label);
+            row.appendChild(input);
             body.appendChild(row);
         });
 
@@ -270,9 +291,8 @@ function createSections() {
         container.appendChild(card);
     });
 
-    document.querySelectorAll("input[type='number']").forEach(input => {
-        input.addEventListener("input", function() { handleInput(this); });
-    });
+    document.getElementById("calculateBtn")
+        .addEventListener("click", calculateResults);
 }
 
 function toggleSection(card) {
